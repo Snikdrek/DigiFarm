@@ -33,27 +33,9 @@ function Home() {
         </div>
 
         <div className="card">
-          <div className="card-icon">🌍</div>
-          <h3>Soil Analysis</h3>
-          <p>Analyze soil health, nutrient levels, and pH balance. Get recommendations for soil improvement.</p>
-        </div>
-
-        <div className="card">
           <div className="card-icon">💧</div>
           <h3>Irrigation Management</h3>
           <p>Optimize water usage with smart irrigation systems. Schedule watering based on crop needs and weather.</p>
-        </div>
-
-        <div className="card">
-          <div className="card-icon">🐛</div>
-          <h3>Pest Control</h3>
-          <p>Identify pests and diseases early. Get treatment recommendations and prevention strategies.</p>
-        </div>
-
-        <div className="card">
-          <div className="card-icon">🚜</div>
-          <h3>Farm Equipment</h3>
-          <p>Manage your farming equipment inventory. Schedule maintenance and track usage.</p>
         </div>
 
         <div className="card">
