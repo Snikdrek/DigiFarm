@@ -3,7 +3,7 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+/* Global Styles */
 .App {
   min-height: 100vh;
   display: flex;
@@ -41,7 +41,7 @@
   border-radius: 999px;
   font-size: 0.95rem;
 }
-
+/* Navigation Menu */
 .nav-menu {
   list-style: none;
   display: flex;
