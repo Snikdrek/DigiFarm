@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
+
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+
 import Landing from './components/Landing';
 import CropManagement from './components/CropManagement';
 import WeatherForecast from './components/WeatherForecast';
@@ -9,67 +12,209 @@ import Dashboard from './components/Dashboard';
 import FAQ from './components/FAQ';
 import Login from './components/Login';
 import Register from './components/Register';
+import Home from './components/Home';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
-  const [currentUser, setCurrentUser] = useState(null);
+const FARMER_EMAIL_KEY = 'farmer_email';
+const EXPERT_EMAIL_KEY = 'expert_email';
+const FARMER_LOGGED_IN_KEY = 'farmer_logged_in';
+const EXPERT_LOGGED_IN_KEY = 'expert_logged_in';
+
+// Pages where navbar SHOULD be shown (same idea as your example)
+const NAVBAR_PATHS = [
+  '/dashboard',
+  '/crops',
+  '/weather',
+  '/market',
+  '/irrigation',
+  '/faq',
+  '/home',
+];
+
+const ConditionalNavbar = ({
+  farmerEmail,
+  expertEmail,
+  isFarmerLoggedIn,
+  isExpertLoggedIn,
+  onLogout,
+}) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const shouldShowNavbar = NAVBAR_PATHS.some(
+    (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
+  );
+  if (!shouldShowNavbar) return null;
+
+  const signedInLabel =
+    isFarmerLoggedIn ? `Farmer: ${farmerEmail}` :
+    isExpertLoggedIn ? `Expert: ${expertEmail}` :
+    'Not signed in';
+
+  const showLogout = isFarmerLoggedIn || isExpertLoggedIn;
+
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/home', label: 'Home' },
+    { path: '/crops', label: 'Crops' },
+    { path: '/weather', label: 'Weather' },
+    { path: '/market', label: 'Market' },
+    { path: '/irrigation', label: 'Irrigation' },
+    { path: '/faq', label: 'FAQ' },
+  ];
+
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`);
+
+  return (
+    <nav className="navbar">
+      <div
+        className="nav-brand"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          width: '100%',
+        }}
+      >
+        <div>
+          <h1 style={{ margin: 0, marginBottom: '0.55rem', cursor: 'pointer' }} onClick={() => navigate('/home')}>
+            🌾 DigiFarm
+          </h1>
+          <span className="nav-user">{signedInLabel}</span>
+        </div>
+
+        {showLogout ? (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onLogout}
+            style={{ height: 'fit-content' }}
+          >
+            Logout
+          </button>
+        ) : null}
+      </div>
+
+      <ul className="nav-menu">
+        {navItems.map((item) => (
+          <li
+            key={item.path}
+            className={isActive(item.path) ? 'active' : ''}
+            onClick={() => navigate(item.path)}
+          >
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
+
+function AppInner() {
+  const navigate = useNavigate();
+
+  // Farmer state
+  const [farmerEmail, setFarmerEmail] = useState(() => localStorage.getItem(FARMER_EMAIL_KEY) || '');
+  const [isFarmerLoggedIn, setIsFarmerLoggedIn] = useState(
+    () => localStorage.getItem(FARMER_LOGGED_IN_KEY) === 'true'
+  );
+
+  // Expert state
+  const [expertEmail, setExpertEmail] = useState(() => localStorage.getItem(EXPERT_EMAIL_KEY) || '');
+  const [isExpertLoggedIn, setIsExpertLoggedIn] = useState(
+    () => localStorage.getItem(EXPERT_LOGGED_IN_KEY) === 'true'
+  );
+
+  // Persist farmer
+  useEffect(() => {
+    localStorage.setItem(FARMER_EMAIL_KEY, farmerEmail);
+  }, [farmerEmail]);
+
+  useEffect(() => {
+    localStorage.setItem(FARMER_LOGGED_IN_KEY, String(isFarmerLoggedIn));
+  }, [isFarmerLoggedIn]);
+
+  // Persist expert
+  useEffect(() => {
+    localStorage.setItem(EXPERT_EMAIL_KEY, expertEmail);
+  }, [expertEmail]);
+
+  useEffect(() => {
+    localStorage.setItem(EXPERT_LOGGED_IN_KEY, String(isExpertLoggedIn));
+  }, [isExpertLoggedIn]);
 
   const handleLogout = () => {
-    setCurrentUser(null);
-    setCurrentPage('landing');
-  };
+    localStorage.clear();
 
-  const renderPage = () => {
-    switch(currentPage) {
-      case 'landing':
-        return <Landing onFinish={() => setCurrentPage('login')} />;
-      case 'dashboard': return <Dashboard />;
-      case 'crops': return <CropManagement />;
-      case 'weather': return <WeatherForecast />;
-      case 'market': return <MarketPrices />;
-      case 'irrigation': return <IrrigationManagement />;
-      case 'faq': return <FAQ />;
-      case 'login':
-        return (
-          <Login
-            onLogin={(user) => { setCurrentUser(user); setCurrentPage('dashboard'); }}
-            onRegisterLink={() => setCurrentPage('register')}
-          />
-        );
-      case 'register':
-        return <Register onRegisterComplete={(user) => { setCurrentUser(user); setCurrentPage('dashboard'); }} />;
-      default: return <Landing onFinish={() => setCurrentPage('login')} />;
-    }
+    setFarmerEmail('');
+    setExpertEmail('');
+    setIsFarmerLoggedIn(false);
+    setIsExpertLoggedIn(false);
+
+    navigate('/login');
   };
 
   return (
-    <div className="App">
-      <nav className="navbar">
-        <div className="nav-brand">
-          <h1>🌾 DigiFarm</h1>
-          {currentUser ? <span className="nav-user">Signed in: {currentUser.name || currentUser.email}</span> : <span className="nav-user">Not signed in</span>}
-        </div>
-        <ul className="nav-menu">
-          <li onClick={() => setCurrentPage('landing')} className={currentPage === 'landing' ? 'active' : ''}>Welcome</li>
-          <li onClick={() => setCurrentPage('dashboard')} className={currentPage === 'dashboard' ? 'active' : ''}>Dashboard</li>
-          <li onClick={() => setCurrentPage('crops')} className={currentPage === 'crops' ? 'active' : ''}>Crop Management</li>
-          <li onClick={() => setCurrentPage('weather')} className={currentPage === 'weather' ? 'active' : ''}>Weather</li>
-          <li onClick={() => setCurrentPage('market')} className={currentPage === 'market' ? 'active' : ''}>Market Prices</li>
-          <li onClick={() => setCurrentPage('irrigation')} className={currentPage === 'irrigation' ? 'active' : ''}>Irrigation</li>
-          <li onClick={() => setCurrentPage('faq')} className={currentPage === 'faq' ? 'active' : ''}>FAQ</li>
-          {currentUser ? (
-            <li className="logout" onClick={handleLogout}>Logout</li>
-          ) : null}
-        </ul>
-      </nav>
-      <main className="main-content">
-        {renderPage()}
-      </main>
-      <footer className="footer">
-        <p>&copy; 2025 DigiFarm - Smart Agriculture Solutions | All Rights Reserved</p>
-      </footer>
+    <div className="app-container">
+      <ConditionalNavbar
+        farmerEmail={farmerEmail}
+        expertEmail={expertEmail}
+        isFarmerLoggedIn={isFarmerLoggedIn}
+        isExpertLoggedIn={isExpertLoggedIn}
+        onLogout={handleLogout}
+      />
+
+      <div className="main-content">
+        <Routes>
+          <Route path="/" element={<Landing />} />
+
+          <Route
+            path="/login"
+            element={
+              <Login
+                farmerEmail={farmerEmail}
+                setFarmerEmail={setFarmerEmail}
+                isFarmerLoggedIn={isFarmerLoggedIn}
+                setIsFarmerLoggedIn={setIsFarmerLoggedIn}
+                expertEmail={expertEmail}
+                setExpertEmail={setExpertEmail}
+                isExpertLoggedIn={isExpertLoggedIn}
+                setIsExpertLoggedIn={setIsExpertLoggedIn}
+              />
+            }
+          />
+
+          <Route path="/register" element={<Register />} />
+
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/crops" element={<CropManagement />} />
+          <Route path="/weather" element={<WeatherForecast />} />
+          <Route path="/market" element={<MarketPrices />} />
+          <Route path="/irrigation" element={<IrrigationManagement />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </div>
+
+      <style>{`
+        .app-container {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .main-content {
+          flex: 1;
+        }
+      `}</style>
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <AppInner />
+    </Router>
+  );
+}
