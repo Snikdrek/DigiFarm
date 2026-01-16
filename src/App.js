@@ -13,6 +13,7 @@ import FAQ from './components/FAQ';
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
+import DiseaseDetection from './components/DiseaseDetecton';
 
 const FARMER_EMAIL_KEY = 'farmer_email';
 const EXPERT_EMAIL_KEY = 'expert_email';
@@ -28,6 +29,7 @@ const NAVBAR_PATHS = [
   '/irrigation',
   '/faq',
   '/home',
+  '/disease-detection',
 ];
 
 const ConditionalNavbar = ({
@@ -60,6 +62,7 @@ const ConditionalNavbar = ({
     { path: '/market', label: 'Market' },
     { path: '/irrigation', label: 'Irrigation' },
     { path: '/faq', label: 'FAQ' },
+    { path: '/disease-detection', label: 'Disease Detection' },
   ];
 
   const isActive = (path) =>
@@ -194,6 +197,8 @@ function AppInner() {
           <Route path="/irrigation" element={<IrrigationManagement />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/disease-detection" element={<DiseaseDetection />} />
+
         </Routes>
       </div>
 
