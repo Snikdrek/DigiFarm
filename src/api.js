@@ -94,9 +94,7 @@ export const addField = async (farmerId, data) => {
 };
 
 const OPENWEATHER_API_KEY = '008318cca650e6636b5266bf220f8d78';
-// Use env for AI key; fall back to undefined so we can skip calls when not configured.
-const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-1.5-flash-latest';
+const GEMINI_API_KEY = 'AIzaSyDIJS5kh_9l7pmXQ5PW4GWwBpSvV4s94Zs';
 
 export async function fetchOpenWeather(city) {
   if (!city || !city.trim()) {
@@ -135,50 +133,41 @@ export async function fetchMarketInsight(crop, location) {
   }
 
   const prompt = `Provide a brief market analysis for ${crop} in ${location}. Include: 1) Current estimated price range in local currency, 2) Market trend (rising/falling/stable), 3) Brief explanation (2-3 sentences). Format as JSON with keys: estimatedPrice, trend, explanation.`;
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
-      })
-    });
-
-    const data = await parseJsonSafely(res);
-    if (!res.ok) {
-      const msg = (data && data.error?.message) ? data.error.message : `Gemini API failed (${res.status})`;
-      throw new Error(msg);
-    }
-
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-    try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-    } catch (e) {
-      // Parsing fallback continues below
-    }
-
-    return {
-      estimatedPrice: 'See explanation',
-      trend: 'Variable',
-      explanation: text || 'No data available'
-    };
-  } catch (error) {
-    // Return a graceful fallback instead of bubbling an API-specific error.
-    return {
-      estimatedPrice: 'Not available',
-      trend: 'Unknown',
-      explanation: `AI market insight unavailable: ${error.message}`
-    };
+  
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: prompt }]
+      }]
+    })
+  });
+  
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.error?.message) ? data.error.message : `Gemini API failed (${res.status})`;
+    throw new Error(msg);
   }
+  
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+  } catch (e) {
+    // Fallback if JSON parsing fails
+  }
+  
+  return {
+    estimatedPrice: 'See explanation',
+    trend: 'Variable',
+    explanation: text || 'No data available'
+  };
 }
 
 // ========== IRRIGATION API ==========
