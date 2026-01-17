@@ -14,6 +14,11 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import DiseaseDetection from './components/DiseaseDetecton';
+import ExpertDashboard from './components/ExpertDashboard';
+import ExpertNavbar from './components/ExpertNavbar';
+import ExpertArticles from './components/ExpertArticles';
+
+
 
 const FARMER_EMAIL_KEY = 'farmer_email';
 const EXPERT_EMAIL_KEY = 'expert_email';
@@ -30,6 +35,14 @@ const NAVBAR_PATHS = [
   '/faq',
   '/home',
   '/disease-detection',
+];
+
+// Expert pages where expert navbar should be shown
+const EXPERT_NAVBAR_PATHS = [
+  '/expert-dashboard',
+  '/expert/answer-questions',
+  '/expert/disease-reports',
+  '/expert/write-articles',
 ];
 
 const ConditionalNavbar = ({
@@ -87,7 +100,7 @@ const ConditionalNavbar = ({
           <span className="nav-user">{signedInLabel}</span>
         </div>
 
-        {showLogout ? (
+        {showLogout && isFarmerLoggedIn ? (
           <button
             type="button"
             className="btn btn-secondary"
@@ -112,6 +125,18 @@ const ConditionalNavbar = ({
       </ul>
     </nav>
   );
+};
+
+const ConditionalExpertNavbar = ({ expertEmail, onLogout }) => {
+  const location = useLocation();
+
+  const shouldShowExpertNavbar = EXPERT_NAVBAR_PATHS.some(
+    (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
+  );
+
+  if (!shouldShowExpertNavbar) return null;
+
+  return <ExpertNavbar expertEmail={expertEmail} onLogout={onLogout} />;
 };
 
 function AppInner() {
@@ -167,6 +192,10 @@ function AppInner() {
         isExpertLoggedIn={isExpertLoggedIn}
         onLogout={handleLogout}
       />
+      <ConditionalExpertNavbar
+        expertEmail={expertEmail}
+        onLogout={handleLogout}
+      />
 
       <div className="main-content">
         <Routes>
@@ -198,6 +227,10 @@ function AppInner() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
+          <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+          
+          <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
+          
 
         </Routes>
       </div>
