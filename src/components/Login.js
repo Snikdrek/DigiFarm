@@ -27,6 +27,8 @@ const notificationStyles = {
 export default function Login({
   farmerEmail,
   setFarmerEmail,
+  farmerId,
+  setFarmerId,
   isFarmerLoggedIn,
   setIsFarmerLoggedIn,
   expertEmail,
@@ -100,13 +102,16 @@ export default function Login({
 
       const userType = data?.userType || role;
       const emailFromServer = data?.email || emailInput;
+      const farmerIdFromServer = data?.farmerId || '';
 
       if (userType === "farmer") {
         setFarmerEmail(emailFromServer);
+        setFarmerId(String(farmerIdFromServer || ''));
         setIsFarmerLoggedIn(true);
         setIsExpertLoggedIn(false);
       } else {
         setExpertEmail(emailFromServer);
+        setFarmerId('');
         setIsExpertLoggedIn(true);
         setIsFarmerLoggedIn(false);
       }
@@ -559,6 +564,8 @@ export default function Login({
 Login.propTypes = {
   farmerEmail: PropTypes.string.isRequired,
   setFarmerEmail: PropTypes.func.isRequired,
+  farmerId: PropTypes.string.isRequired,
+  setFarmerId: PropTypes.func.isRequired,
   isFarmerLoggedIn: PropTypes.bool.isRequired,
   setIsFarmerLoggedIn: PropTypes.func.isRequired,
 

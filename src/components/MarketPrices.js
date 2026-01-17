@@ -2,11 +2,11 @@ import React, { useState } from "react";
 
 /* ================= GEMINI REST CONFIG ================= */
 // ⚠️ DEMO ONLY — API KEY IS EXPOSED
-const GEMINI_API_KEY = "AIzaSyCeGLtyvzZ2EI9kh22tXYRrXmO8ATl7ebM";
+// Replace with your own key or set REACT_APP_GEMINI_API_KEY in .env.local
+const GEMINI_API_KEY = "AIzaSyB1_BfYtzowy5Gw7AUQ98xHOBm-X9uSSo4";
 
 const GEMINI_URL =
   `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-/* ===================================================== */
 
 function MarketPrices() {
   const [crop, setCrop] = useState("rice");
@@ -14,6 +14,8 @@ function MarketPrices() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const [cooldownReason, setCooldownReason] = useState("");
 
   /* -------- PROMPT BUILDER (same idea as chatbot) -------- */
   const buildPrompt = (crop, location) => `
@@ -32,6 +34,17 @@ Do not include markdown or extra text.
   /* -------- FETCH MARKET INSIGHT -------- */
   const getInsight = async () => {
     if (!crop.trim() || !location.trim()) return;
+
+    if (!GEMINI_API_KEY) {
+      setError("Missing API key. Set REACT_APP_GEMINI_API_KEY in your .env file.");
+      return;
+    }
+
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      const seconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      setError(cooldownReason || `Rate limit hit. Try again in ${seconds}s.`);
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -54,7 +67,14 @@ Do not include markdown or extra text.
 
       if (!response.ok) {
         const errText = await response.text();
-        throw new Error(errText);
+        if (response.status === 429) {
+          const cooldownMs = 300_000; // 5 minutes to back off harder
+          setCooldownUntil(Date.now() + cooldownMs);
+          setCooldownReason("Rate limit exceeded. Please wait ~5 minutes before retrying.");
+          setError("Rate limit exceeded. Please wait ~5 minutes before retrying.");
+          return;
+        }
+        throw new Error(errText || `Request failed (${response.status})`);
       }
 
       const data = await response.json();
@@ -76,7 +96,7 @@ Do not include markdown or extra text.
       }
     } catch (err) {
       console.error("Gemini Market Error:", err);
-      setError("⚠️ Unable to fetch market prices right now.");
+      setError(err.message || "⚠️ Unable to fetch market prices right now.");
     } finally {
       setLoading(false);
     }

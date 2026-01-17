@@ -14,8 +14,10 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import DiseaseDetection from './components/DiseaseDetecton';
+import SetupProfile from './components/SetupProfile';
 
 const FARMER_EMAIL_KEY = 'farmer_email';
+const FARMER_ID_KEY = 'farmer_id';
 const EXPERT_EMAIL_KEY = 'expert_email';
 const FARMER_LOGGED_IN_KEY = 'farmer_logged_in';
 const EXPERT_LOGGED_IN_KEY = 'expert_logged_in';
@@ -30,6 +32,7 @@ const NAVBAR_PATHS = [
   '/faq',
   '/home',
   '/disease-detection',
+  '/setup-profile',
 ];
 
 const ConditionalNavbar = ({
@@ -63,6 +66,7 @@ const ConditionalNavbar = ({
     { path: '/irrigation', label: 'Irrigation' },
     { path: '/faq', label: 'FAQ' },
     { path: '/disease-detection', label: 'Disease Detection' },
+    { path: '/setup-profile', label: 'Setup Profile' },
   ];
 
   const isActive = (path) =>
@@ -119,6 +123,7 @@ function AppInner() {
 
   // Farmer state
   const [farmerEmail, setFarmerEmail] = useState(() => localStorage.getItem(FARMER_EMAIL_KEY) || '');
+  const [farmerId, setFarmerId] = useState(() => localStorage.getItem(FARMER_ID_KEY) || '');
   const [isFarmerLoggedIn, setIsFarmerLoggedIn] = useState(
     () => localStorage.getItem(FARMER_LOGGED_IN_KEY) === 'true'
   );
@@ -133,6 +138,10 @@ function AppInner() {
   useEffect(() => {
     localStorage.setItem(FARMER_EMAIL_KEY, farmerEmail);
   }, [farmerEmail]);
+
+  useEffect(() => {
+    localStorage.setItem(FARMER_ID_KEY, farmerId);
+  }, [farmerId]);
 
   useEffect(() => {
     localStorage.setItem(FARMER_LOGGED_IN_KEY, String(isFarmerLoggedIn));
@@ -151,6 +160,7 @@ function AppInner() {
     localStorage.clear();
 
     setFarmerEmail('');
+    setFarmerId('');
     setExpertEmail('');
     setIsFarmerLoggedIn(false);
     setIsExpertLoggedIn(false);
@@ -178,6 +188,8 @@ function AppInner() {
               <Login
                 farmerEmail={farmerEmail}
                 setFarmerEmail={setFarmerEmail}
+                farmerId={farmerId}
+                setFarmerId={setFarmerId}
                 isFarmerLoggedIn={isFarmerLoggedIn}
                 setIsFarmerLoggedIn={setIsFarmerLoggedIn}
                 expertEmail={expertEmail}
@@ -190,14 +202,15 @@ function AppInner() {
 
           <Route path="/register" element={<Register />} />
 
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard farmerId={farmerId} />} />
           <Route path="/crops" element={<CropManagement />} />
           <Route path="/weather" element={<WeatherForecast />} />
           <Route path="/market" element={<MarketPrices />} />
-          <Route path="/irrigation" element={<IrrigationManagement />} />
+          <Route path="/irrigation" element={<IrrigationManagement farmerId={farmerId} />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
+          <Route path="/setup-profile" element={<SetupProfile farmerId={farmerId} />} />
 
         </Routes>
       </div>
