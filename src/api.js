@@ -94,7 +94,9 @@ export const addField = async (farmerId, data) => {
 };
 
 const OPENWEATHER_API_KEY = '008318cca650e6636b5266bf220f8d78';
-const GEMINI_API_KEY = 'AIzaSyDIJS5kh_9l7pmXQ5PW4GWwBpSvV4s94Zs';
+// Use env for AI key; fall back to undefined so we can skip calls when not configured.
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-1.5-flash-latest';
 
 export async function fetchOpenWeather(city) {
   if (!city || !city.trim()) {
@@ -122,43 +124,61 @@ export async function fetchMarketInsight(crop, location) {
   if (!crop || !crop.trim() || !location || !location.trim()) {
     throw new Error('Crop and location are required');
   }
-  
+
+  // Skip the call when no key is configured to avoid noisy 404s.
+  if (!GEMINI_API_KEY) {
+    return {
+      estimatedPrice: 'Not available',
+      trend: 'Unknown',
+      explanation: 'AI market insight is not configured. Add REACT_APP_GEMINI_API_KEY to enable.'
+    };
+  }
+
   const prompt = `Provide a brief market analysis for ${crop} in ${location}. Include: 1) Current estimated price range in local currency, 2) Market trend (rising/falling/stable), 3) Brief explanation (2-3 sentences). Format as JSON with keys: estimatedPrice, trend, explanation.`;
-  
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-  
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ text: prompt }]
-      }]
-    })
-  });
-  
-  const data = await parseJsonSafely(res);
-  if (!res.ok) {
-    const msg = (data && data.error?.message) ? data.error.message : `Gemini API failed (${res.status})`;
-    throw new Error(msg);
-  }
-  
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
   try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    const data = await parseJsonSafely(res);
+    if (!res.ok) {
+      const msg = (data && data.error?.message) ? data.error.message : `Gemini API failed (${res.status})`;
+      throw new Error(msg);
     }
-  } catch (e) {
-    // Fallback if JSON parsing fails
+
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      // Parsing fallback continues below
+    }
+
+    return {
+      estimatedPrice: 'See explanation',
+      trend: 'Variable',
+      explanation: text || 'No data available'
+    };
+  } catch (error) {
+    // Return a graceful fallback instead of bubbling an API-specific error.
+    return {
+      estimatedPrice: 'Not available',
+      trend: 'Unknown',
+      explanation: `AI market insight unavailable: ${error.message}`
+    };
   }
-  
-  return {
-    estimatedPrice: 'See explanation',
-    trend: 'Variable',
-    explanation: text || 'No data available'
-  };
 }
 
 // ========== IRRIGATION API ==========
@@ -230,6 +250,78 @@ export const waterNow = async (scheduleId) => {
   const data = await parseJsonSafely(res);
   if (!res.ok) {
     const msg = (data && data.error) ? data.error : `Water now failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+// ========== CROP MANAGEMENT API ==========
+
+export const fetchCropsByFarmer = async (farmerId) => {
+  const res = await fetch(`${BASE_URL}/crops/farmer/${requireFarmerId(farmerId)}`);
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.message) ? data.message : `Crops fetch failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+export const fetchCropDetails = async (cropId) => {
+  const res = await fetch(`${BASE_URL}/crops/${cropId}`);
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.error) ? data.error : `Crop details fetch failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+export const createCrop = async (farmerId, cropData) => {
+  const res = await fetch(`${BASE_URL}/crops/${requireFarmerId(farmerId)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cropData)
+  });
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.error) ? data.error : `Create crop failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+export const updateCrop = async (cropId, cropData) => {
+  const res = await fetch(`${BASE_URL}/crops/${cropId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cropData)
+  });
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.error) ? data.error : `Update crop failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+export const deleteCrop = async (cropId) => {
+  const res = await fetch(`${BASE_URL}/crops/${cropId}`, {
+    method: 'DELETE'
+  });
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.error) ? data.error : `Delete crop failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+};
+
+export const fetchCropDashboard = async (farmerId) => {
+  const res = await fetch(`${BASE_URL}/crops/dashboard/${requireFarmerId(farmerId)}`);
+  const data = await parseJsonSafely(res);
+  if (!res.ok) {
+    const msg = (data && data.message) ? data.message : `Crop dashboard fetch failed (${res.status})`;
     throw new Error(msg);
   }
   return data;

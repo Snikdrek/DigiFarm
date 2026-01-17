@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   fetchIrrigationDashboard,
   fetchIrrigationSchedules,
@@ -25,11 +25,7 @@ function IrrigationManagement({ farmerId }) {
     skipIfRain: true
   });
 
-  useEffect(() => {
-    loadData();
-  }, [farmerId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!farmerId) {
       setError('Farmer ID missing. Please log in.');
       return;
@@ -39,20 +35,9 @@ function IrrigationManagement({ farmerId }) {
       setError('');
       setLoading(true);
       
-      // Load fields - this should always work
-      try {
-        const fieldsData = await fetchFields(farmerId);
-        console.log('Fields loaded:', fieldsData);
-        setFields(Array.isArray(fieldsData) ? fieldsData : []);
-      } catch (fieldError) {
-        console.error('Failed to load fields:', fieldError);
-        setError('Failed to load fields. ' + fieldError.message);
-        setFields([]);
-        setLoading(false);
-        return;
-      }
+      const fieldsData = await fetchFields(farmerId);
+      setFields(Array.isArray(fieldsData) ? fieldsData : []);
 
-      // Load irrigation data
       try {
         const [dashData, schedulesData] = await Promise.all([
           fetchIrrigationDashboard(farmerId),
@@ -72,7 +57,11 @@ function IrrigationManagement({ farmerId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [farmerId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleCreateSchedule = async () => {
     if (!newSchedule.fieldId) {
@@ -337,70 +326,64 @@ function IrrigationManagement({ farmerId }) {
 
       <div style={{ marginTop: '2rem' }}>
         <h3 style={{ color: '#2e7d32', marginBottom: '1rem' }}>Create Irrigation Schedule</h3>
-        {fields.length === 0 ? (
-          <div className="card" style={{ background: '#fff3e0', color: '#c62828' }}>
-            <strong>⚠️ No fields available.</strong> Please add fields in your profile first.
+        <div style={{ background: '#f1f8e9', padding: '1.5rem', borderRadius: '8px' }}>
+          <div className="form-group">
+            <label>Select Field</label>
+            <select 
+              value={newSchedule.fieldId}
+              onChange={(e) => setNewSchedule({...newSchedule, fieldId: e.target.value})}
+            >
+              <option value="">-- Select Field --</option>
+              {fields.map(field => (
+                <option key={field.fieldId} value={field.fieldId}>
+                  {field.fieldName} ({field.crop})
+                </option>
+              ))}
+            </select>
           </div>
-        ) : (
-          <div style={{ background: '#f1f8e9', padding: '1.5rem', borderRadius: '8px' }}>
-            <div className="form-group">
-              <label>Select Field</label>
-              <select 
-                value={newSchedule.fieldId}
-                onChange={(e) => setNewSchedule({...newSchedule, fieldId: e.target.value})}
-              >
-                <option value="">-- Select Field --</option>
-                {fields.map(field => (
-                  <option key={field.fieldId} value={field.fieldId}>
-                    {field.fieldName} ({field.crop})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Start Time</label>
-              <input 
-                type="time" 
-                value={newSchedule.startTime}
-                onChange={(e) => setNewSchedule({...newSchedule, startTime: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
-              <label>Duration (minutes)</label>
-              <input 
-                type="number" 
-                value={newSchedule.durationMinutes}
-                onChange={(e) => setNewSchedule({...newSchedule, durationMinutes: parseInt(e.target.value)})}
-              />
-            </div>
-            <div className="form-group">
-              <label>Frequency</label>
-              <select 
-                value={newSchedule.frequency}
-                onChange={(e) => setNewSchedule({...newSchedule, frequency: e.target.value})}
-              >
-                <option>Daily</option>
-                <option>Every 2 days</option>
-                <option>Every 3 days</option>
-                <option>Weekly</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>
-                <input 
-                  type="checkbox" 
-                  style={{ width: 'auto', marginRight: '0.5rem' }}
-                  checked={newSchedule.skipIfRain}
-                  onChange={(e) => setNewSchedule({...newSchedule, skipIfRain: e.target.checked})}
-                />
-                Skip if rain is forecasted
-              </label>
-            </div>
-            <button className="btn" onClick={handleCreateSchedule} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Schedule'}
-            </button>
+          <div className="form-group">
+            <label>Start Time</label>
+            <input 
+              type="time" 
+              value={newSchedule.startTime}
+              onChange={(e) => setNewSchedule({...newSchedule, startTime: e.target.value})}
+            />
           </div>
-        )}
+          <div className="form-group">
+            <label>Duration (minutes)</label>
+            <input 
+              type="number" 
+              value={newSchedule.durationMinutes}
+              onChange={(e) => setNewSchedule({...newSchedule, durationMinutes: parseInt(e.target.value)})}
+            />
+          </div>
+          <div className="form-group">
+            <label>Frequency</label>
+            <select 
+              value={newSchedule.frequency}
+              onChange={(e) => setNewSchedule({...newSchedule, frequency: e.target.value})}
+            >
+              <option>Daily</option>
+              <option>Every 2 days</option>
+              <option>Every 3 days</option>
+              <option>Weekly</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>
+              <input 
+                type="checkbox" 
+                style={{ width: 'auto', marginRight: '0.5rem' }}
+                checked={newSchedule.skipIfRain}
+                onChange={(e) => setNewSchedule({...newSchedule, skipIfRain: e.target.checked})}
+              />
+              Skip if rain is forecasted
+            </label>
+          </div>
+          <button className="btn" onClick={handleCreateSchedule} disabled={loading}>
+            {loading ? 'Creating...' : 'Create Schedule'}
+          </button>
+        </div>
       </div>
     </div>
   );

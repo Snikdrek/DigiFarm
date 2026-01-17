@@ -102,11 +102,11 @@ export default function Login({
 
       const userType = data?.userType || role;
       const emailFromServer = data?.email || emailInput;
-      const farmerIdFromServer = data?.farmerId || '';
+      const farmerIdFromServer = data?.farmerId ?? '';
 
       if (userType === "farmer") {
         setFarmerEmail(emailFromServer);
-        setFarmerId(String(farmerIdFromServer || ''));
+        setFarmerId(farmerIdFromServer ? String(farmerIdFromServer) : '');
         setIsFarmerLoggedIn(true);
         setIsExpertLoggedIn(false);
       } else {

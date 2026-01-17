@@ -256,6 +256,10 @@ function AppInner() {
   }, [farmerEmail]);
 
   useEffect(() => {
+    localStorage.setItem(FARMER_ID_KEY, farmerId);
+  }, [farmerId]);
+
+  useEffect(() => {
     localStorage.setItem(FARMER_LOGGED_IN_KEY, String(isFarmerLoggedIn));
   }, [farmerEmail, isFarmerLoggedIn]);
 
@@ -318,14 +322,15 @@ function AppInner() {
           <Route path="/register" element={<Register />} />
 
           <Route path="/dashboard" element={<Dashboard farmerId={farmerId} />} />
-          <Route path="/crops" element={<CropManagement />} />
+          <Route path="/crops" element={<CropManagement farmerId={farmerId} />} />
           <Route path="/weather" element={<WeatherForecast />} />
           <Route path="/market" element={<MarketPrices />} />
           <Route path="/irrigation" element={<IrrigationManagement farmerId={farmerId} />} />
-          <Route path="/faq" element={<FAQ farmerEmail={farmerEmail} />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
           <Route path="/setup-profile" element={<SetupProfile farmerId={farmerId} />} />
+          <Route path='faq' element={<FAQ farmerEmail={farmerEmail} />} />
           <Route path="/expert-dashboard" element={<ExpertDashboard />} />
           <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
           <Route path="/expert/answer-questions" element={<ExpertAnswers expertEmail={expertEmail} />} />
