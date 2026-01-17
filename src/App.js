@@ -88,27 +88,124 @@ const ConditionalNavbar = ({
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`);
 
+  const navbarStyles = {
+    navbar: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '16px 48px',
+      background: '#f5f5f5',
+      borderBottom: '1px solid #e0e0e0',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+    },
+    brand: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      cursor: 'pointer',
+    },
+    brandText: {
+      fontSize: '1.3rem',
+      fontWeight: '700',
+      color: '#1e293b',
+      margin: 0,
+      letterSpacing: '-0.5px',
+    },
+    navMenu: {
+      display: 'flex',
+      listStyle: 'none',
+      gap: '32px',
+      margin: 0,
+      padding: 0,
+      alignItems: 'center',
+    },
+    navItem: {
+      fontSize: '0.95rem',
+      fontWeight: '500',
+      color: '#64748b',
+      cursor: 'pointer',
+      transition: 'color 0.2s ease',
+      position: 'relative',
+      padding: '4px 0',
+    },
+    navItemActive: {
+      color: '#1e293b',
+      fontWeight: '600',
+    },
+    rightSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '20px',
+    },
+    userInfo: {
+      fontSize: '0.9rem',
+      color: '#64748b',
+      fontWeight: '500',
+    },
+    logoutButton: {
+      padding: '10px 24px',
+      background: '#1e293b',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+  };
+
   return (
-    <nav className="navbar">
-      <div className="nav-brand">
-        <h1 onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>🌾 DigiFarm</h1>
-        <span>{signedInLabel}</span>
-        {showLogout && isFarmerLoggedIn && (
-          <button onClick={onLogout}>Logout</button>
-        )}
+    <nav style={navbarStyles.navbar}>
+      {/* Left - Brand */}
+      <div style={navbarStyles.brand} onClick={() => navigate('/home')}>
+        <h1 style={navbarStyles.brandText}>🌾 DigiFarm</h1>
       </div>
 
-      <ul className="nav-menu">
+      {/* Center - Navigation Links */}
+      <ul style={navbarStyles.navMenu}>
         {navItems.map((item) => (
           <li
             key={item.path}
-            className={isActive(item.path) ? 'active' : ''}
+            style={{
+              ...navbarStyles.navItem,
+              ...(isActive(item.path) ? navbarStyles.navItemActive : {}),
+            }}
             onClick={() => navigate(item.path)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#1e293b';
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive(item.path)) {
+                e.currentTarget.style.color = '#64748b';
+              }
+            }}
           >
             {item.label}
           </li>
         ))}
       </ul>
+
+      {/* Right - User Info & Logout */}
+      <div style={navbarStyles.rightSection}>
+        <span style={navbarStyles.userInfo}>{signedInLabel}</span>
+        {showLogout && isFarmerLoggedIn && (
+          <button
+            style={navbarStyles.logoutButton}
+            onClick={onLogout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#334155';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#1e293b';
+            }}
+          >
+            Logout
+          </button>
+        )}
+      </div>
     </nav>
   );
 };
