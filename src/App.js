@@ -17,15 +17,14 @@ import DiseaseDetection from './components/DiseaseDetecton';
 import ExpertDashboard from './components/ExpertDashboard';
 import ExpertNavbar from './components/ExpertNavbar';
 import ExpertArticles from './components/ExpertArticles';
-
-
+import ExpertAnswers from './components/ExpertAnswers';
 
 const FARMER_EMAIL_KEY = 'farmer_email';
 const EXPERT_EMAIL_KEY = 'expert_email';
 const FARMER_LOGGED_IN_KEY = 'farmer_logged_in';
 const EXPERT_LOGGED_IN_KEY = 'expert_logged_in';
 
-// Pages where navbar SHOULD be shown (same idea as your example)
+// Farmer navbar pages
 const NAVBAR_PATHS = [
   '/dashboard',
   '/crops',
@@ -37,14 +36,16 @@ const NAVBAR_PATHS = [
   '/disease-detection',
 ];
 
-// Expert pages where expert navbar should be shown
+// Expert navbar pages
 const EXPERT_NAVBAR_PATHS = [
   '/expert-dashboard',
   '/expert/answer-questions',
-  '/expert/disease-reports',
   '/expert/write-articles',
+  '/disease-detection',
 ];
 
+
+// ---------------- Farmer Navbar ----------------
 const ConditionalNavbar = ({
   farmerEmail,
   expertEmail,
@@ -58,7 +59,13 @@ const ConditionalNavbar = ({
   const shouldShowNavbar = NAVBAR_PATHS.some(
     (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
   );
-  if (!shouldShowNavbar) return null;
+
+  // Disease detection rule
+  if (location.pathname === '/disease-detection') {
+    if (!isFarmerLoggedIn) return null;
+  } else if (!shouldShowNavbar) {
+    return null;
+  }
 
   const signedInLabel =
     isFarmerLoggedIn ? `Farmer: ${farmerEmail}` :
@@ -83,33 +90,12 @@ const ConditionalNavbar = ({
 
   return (
     <nav className="navbar">
-      <div
-        className="nav-brand"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          width: '100%',
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, marginBottom: '0.55rem', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-            🌾 DigiFarm
-          </h1>
-          <span className="nav-user">{signedInLabel}</span>
-        </div>
-
-        {showLogout && isFarmerLoggedIn ? (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onLogout}
-            style={{ height: 'fit-content' }}
-          >
-            Logout
-          </button>
-        ) : null}
+      <div className="nav-brand">
+        <h1 onClick={() => navigate('/home')} style={{ cursor: 'pointer' }}>🌾 DigiFarm</h1>
+        <span>{signedInLabel}</span>
+        {showLogout && isFarmerLoggedIn && (
+          <button onClick={onLogout}>Logout</button>
+        )}
       </div>
 
       <ul className="nav-menu">
@@ -127,18 +113,26 @@ const ConditionalNavbar = ({
   );
 };
 
-const ConditionalExpertNavbar = ({ expertEmail, onLogout }) => {
+
+// ---------------- Expert Navbar ----------------
+const ConditionalExpertNavbar = ({ expertEmail, isExpertLoggedIn, onLogout }) => {
   const location = useLocation();
 
   const shouldShowExpertNavbar = EXPERT_NAVBAR_PATHS.some(
     (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
   );
 
-  if (!shouldShowExpertNavbar) return null;
+  if (location.pathname === '/disease-detection') {
+    if (!isExpertLoggedIn) return null;
+  } else if (!shouldShowExpertNavbar) {
+    return null;
+  }
 
   return <ExpertNavbar expertEmail={expertEmail} onLogout={onLogout} />;
 };
 
+
+// ---------------- App Core ----------------
 function AppInner() {
   const navigate = useNavigate();
 
@@ -157,20 +151,14 @@ function AppInner() {
   // Persist farmer
   useEffect(() => {
     localStorage.setItem(FARMER_EMAIL_KEY, farmerEmail);
-  }, [farmerEmail]);
-
-  useEffect(() => {
     localStorage.setItem(FARMER_LOGGED_IN_KEY, String(isFarmerLoggedIn));
-  }, [isFarmerLoggedIn]);
+  }, [farmerEmail, isFarmerLoggedIn]);
 
   // Persist expert
   useEffect(() => {
     localStorage.setItem(EXPERT_EMAIL_KEY, expertEmail);
-  }, [expertEmail]);
-
-  useEffect(() => {
     localStorage.setItem(EXPERT_LOGGED_IN_KEY, String(isExpertLoggedIn));
-  }, [isExpertLoggedIn]);
+  }, [expertEmail, isExpertLoggedIn]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -192,8 +180,10 @@ function AppInner() {
         isExpertLoggedIn={isExpertLoggedIn}
         onLogout={handleLogout}
       />
+
       <ConditionalExpertNavbar
         expertEmail={expertEmail}
+        isExpertLoggedIn={isExpertLoggedIn}
         onLogout={handleLogout}
       />
 
@@ -224,31 +214,21 @@ function AppInner() {
           <Route path="/weather" element={<WeatherForecast />} />
           <Route path="/market" element={<MarketPrices />} />
           <Route path="/irrigation" element={<IrrigationManagement />} />
-          <Route path="/faq" element={<FAQ />} />
+          <Route path="/faq" element={<FAQ farmerEmail={farmerEmail} />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
-          <Route path="/expert-dashboard" element={<ExpertDashboard />} />
-          
-          <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
-          
 
+          <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+          <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
+          <Route path="/expert/answer-questions" element={<ExpertAnswers expertEmail={expertEmail} />} />
         </Routes>
       </div>
-
-      <style>{`
-        .app-container {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        .main-content {
-          flex: 1;
-        }
-      `}</style>
     </div>
   );
 }
 
+
+// ---------------- Router Wrapper ----------------
 export default function App() {
   return (
     <Router>

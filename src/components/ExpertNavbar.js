@@ -9,8 +9,9 @@ function ExpertNavbar({ expertEmail, onLogout }) {
   const navItems = [
     { path: '/expert-dashboard', label: 'Dashboard' },
     { path: '/expert/answer-questions', label: 'Answer Questions' },
-    { path: '/expert/disease-reports', label: 'Disease Reports' },
+    
     { path: '/expert/write-articles', label: 'Write Articles' },
+    {path: '/disease-detection', label: 'Disease Detection'}
   ];
 
   const isActive = (path) =>

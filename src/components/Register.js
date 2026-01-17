@@ -118,98 +118,401 @@ function Register() {
     }
   };
 
+  const styles = {
+    container: {
+      minHeight: '100vh',
+      display: 'flex',
+      overflow: 'hidden',
+    },
+    leftPanel: {
+      flex: '0 0 45%',
+      background: 'linear-gradient(135deg, #2c5364 0%, #203a43 50%, #0f2027 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '60px 40px',
+      position: 'relative',
+      color: 'white',
+    },
+    leftContent: {
+      textAlign: 'center',
+      maxWidth: '400px',
+      zIndex: 2,
+    },
+    welcomeTitle: {
+      fontSize: '2.5rem',
+      fontWeight: '800',
+      marginBottom: '20px',
+      color: 'white',
+    },
+    welcomeText: {
+      fontSize: '1.1rem',
+      lineHeight: '1.7',
+      color: 'rgba(255, 255, 255, 0.9)',
+      marginBottom: '40px',
+    },
+    decorationIcon: {
+      fontSize: '6rem',
+      marginBottom: '30px',
+    },
+    rightPanel: {
+      flex: '0 0 55%',
+      background: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '40px',
+      overflowY: 'auto',
+    },
+    formWrapper: {
+      width: '100%',
+      maxWidth: '480px',
+    },
+    header: {
+      marginBottom: '35px',
+    },
+    title: {
+      fontSize: '2rem',
+      fontWeight: '800',
+      color: '#1e293b',
+      marginBottom: '8px',
+    },
+    subtitle: {
+      fontSize: '0.95rem',
+      color: '#64748b',
+    },
+    roleToggle: {
+      display: 'flex',
+      gap: '12px',
+      marginBottom: '25px',
+    },
+    roleButton: {
+      flex: 1,
+      padding: '10px',
+      border: '2px solid #e2e8f0',
+      background: 'white',
+      borderRadius: '10px',
+      fontSize: '0.95rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      color: '#64748b',
+    },
+    roleButtonActive: {
+      background: '#1e293b',
+      color: 'white',
+      borderColor: '#1e293b',
+    },
+    formRow: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '15px',
+      marginBottom: '15px',
+    },
+    formGroup: {
+      marginBottom: '15px',
+    },
+    label: {
+      display: 'block',
+      fontSize: '0.85rem',
+      fontWeight: '600',
+      color: '#334155',
+      marginBottom: '6px',
+    },
+    input: {
+      width: '100%',
+      padding: '10px 14px',
+      fontSize: '0.95rem',
+      border: '1px solid #e2e8f0',
+      borderRadius: '8px',
+      outline: 'none',
+      transition: 'all 0.3s ease',
+      boxSizing: 'border-box',
+      fontFamily: 'inherit',
+    },
+    inputDisabled: {
+      background: '#f8fafc',
+      cursor: 'not-allowed',
+    },
+    errorMsg: {
+      color: '#dc2626',
+      background: '#fef2f2',
+      padding: '10px 14px',
+      borderRadius: '8px',
+      marginBottom: '15px',
+      fontSize: '0.85rem',
+      fontWeight: '500',
+      border: '1px solid #fecaca',
+    },
+    successMsg: {
+      color: '#16a34a',
+      background: '#f0fdf4',
+      padding: '10px 14px',
+      borderRadius: '8px',
+      marginBottom: '15px',
+      fontSize: '0.85rem',
+      fontWeight: '500',
+      border: '1px solid #bbf7d0',
+    },
+    submitButton: {
+      width: '100%',
+      padding: '12px',
+      background: '#1e293b',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '1rem',
+      fontWeight: '700',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      marginTop: '10px',
+    },
+    submitButtonDisabled: {
+      opacity: '0.6',
+      cursor: 'not-allowed',
+    },
+    footer: {
+      marginTop: '20px',
+      textAlign: 'center',
+      fontSize: '0.9rem',
+      color: '#64748b',
+    },
+    link: {
+      color: '#1e293b',
+      fontWeight: '600',
+      textDecoration: 'none',
+    },
+  };
+
   return (
-    <div className="page-container">
-      <h1 className="page-title">{title}</h1>
-      <p className="page-subtitle">Create your DigiFarm account</p>
+    <div style={styles.container}>
+      {/* Left Decorative Panel */}
+      <div style={styles.leftPanel}>
+        <div style={styles.leftContent}>
+          <div style={styles.decorationIcon}>🌾</div>
+          <h2 style={styles.welcomeTitle}>Welcome to DigiFarm</h2>
+          <p style={styles.welcomeText}>
+            Join our community of farmers and agricultural experts. 
+            Share knowledge, get expert advice, and grow together.
+          </p>
+        </div>
+      </div>
 
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Register as</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} disabled={loading}>
-              <option value="farmer">Farmer</option>
-              <option value="expert">Expert</option>
-            </select>
+      {/* Right Form Panel */}
+      <div style={styles.rightPanel}>
+        <div style={styles.formWrapper}>
+          <div style={styles.header}>
+            <h1 style={styles.title}>{title}</h1>
+            <p style={styles.subtitle}>Create your account to get started</p>
           </div>
 
-          <div className="form-group">
-            <label>Name *</label>
-            <input value={form.name} onChange={onChange("name")} placeholder="Full name" disabled={loading} />
-          </div>
-
-          <div className="form-group">
-            <label>Email *</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={onChange("email")}
-              placeholder="you@example.com"
-              autoComplete="email"
+          {/* Role Toggle Buttons */}
+          <div style={styles.roleToggle}>
+            <button
+              type="button"
+              onClick={() => setRole('farmer')}
               disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password *</label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={onChange("password")}
-              placeholder="Create a password"
-              autoComplete="new-password"
+              style={{
+                ...styles.roleButton,
+                ...(role === 'farmer' ? styles.roleButtonActive : {}),
+                ...(loading ? styles.inputDisabled : {}),
+              }}
+            >
+              🌾 Farmer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('expert')}
               disabled={loading}
-            />
+              style={{
+                ...styles.roleButton,
+                ...(role === 'expert' ? styles.roleButtonActive : {}),
+                ...(loading ? styles.inputDisabled : {}),
+              }}
+            >
+              👨‍🌾 Expert
+            </button>
           </div>
 
-          <div className="form-group">
-            <label>Phone</label>
-            <input value={form.phone} onChange={onChange("phone")} placeholder="Phone" disabled={loading} />
-          </div>
-
-          <div className="form-group">
-            <label>Village</label>
-            <input value={form.village} onChange={onChange("village")} placeholder="Village" disabled={loading} />
-          </div>
-
-          <div className="form-group">
-            <label>City</label>
-            <input value={form.city} onChange={onChange("city")} placeholder="City" disabled={loading} />
-          </div>
-
-          <div className="form-group">
-            <label>District</label>
-            <input value={form.district} onChange={onChange("district")} placeholder="District" disabled={loading} />
-          </div>
-
-          <div className="form-group">
-            <label>Country</label>
-            <input value={form.country} onChange={onChange("country")} placeholder="Country" disabled={loading} />
-          </div>
-
-          {role === "expert" ? (
-            <div className="form-group">
-              <label>Specialization</label>
+          <form onSubmit={handleSubmit}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>FULL NAME *</label>
               <input
-                value={form.specialization}
-                onChange={onChange("specialization")}
-                placeholder="E.g., Soil, Crops, Pest control"
+                style={{
+                  ...styles.input,
+                  ...(loading ? styles.inputDisabled : {}),
+                }}
+                value={form.name}
+                onChange={onChange("name")}
+                placeholder="Enter your full name"
                 disabled={loading}
+                onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
               />
             </div>
-          ) : null}
 
-          {error ? <p style={{ color: "#c62828", marginTop: "0.5rem" }}>{error}</p> : null}
-          {successMsg ? <p style={{ color: "#2e7d32", marginTop: "0.5rem" }}>{successMsg}</p> : null}
+            <div style={styles.formGroup}>
+              <label style={styles.label}>EMAIL *</label>
+              <input
+                style={{
+                  ...styles.input,
+                  ...(loading ? styles.inputDisabled : {}),
+                }}
+                type="email"
+                value={form.email}
+                onChange={onChange("email")}
+                placeholder="you@example.com"
+                autoComplete="email"
+                disabled={loading}
+                onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+              />
+            </div>
 
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? "Creating account…" : "Create Account"}
-          </button>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>PASSWORD *</label>
+              <input
+                style={{
+                  ...styles.input,
+                  ...(loading ? styles.inputDisabled : {}),
+                }}
+                type="password"
+                value={form.password}
+                onChange={onChange("password")}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                disabled={loading}
+                onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+              />
+            </div>
 
-          <p style={{ marginTop: "1rem", marginBottom: 0 }}>
-            Already have an account? <Link to="/login">Login</Link>
-          </p>
-        </form>
+            <div style={styles.formRow}>
+              <div>
+                <label style={styles.label}>PHONE</label>
+                <input
+                  style={{
+                    ...styles.input,
+                    ...(loading ? styles.inputDisabled : {}),
+                  }}
+                  value={form.phone}
+                  onChange={onChange("phone")}
+                  placeholder="Phone"
+                  disabled={loading}
+                  onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>VILLAGE</label>
+                <input
+                  style={{
+                    ...styles.input,
+                    ...(loading ? styles.inputDisabled : {}),
+                  }}
+                  value={form.village}
+                  onChange={onChange("village")}
+                  placeholder="Village"
+                  disabled={loading}
+                  onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                />
+              </div>
+            </div>
+
+            <div style={styles.formRow}>
+              <div>
+                <label style={styles.label}>CITY</label>
+                <input
+                  style={{
+                    ...styles.input,
+                    ...(loading ? styles.inputDisabled : {}),
+                  }}
+                  value={form.city}
+                  onChange={onChange("city")}
+                  placeholder="City"
+                  disabled={loading}
+                  onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                />
+              </div>
+              <div>
+                <label style={styles.label}>DISTRICT</label>
+                <input
+                  style={{
+                    ...styles.input,
+                    ...(loading ? styles.inputDisabled : {}),
+                  }}
+                  value={form.district}
+                  onChange={onChange("district")}
+                  placeholder="District"
+                  disabled={loading}
+                  onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                />
+              </div>
+            </div>
+
+            <div style={styles.formRow}>
+              <div>
+                <label style={styles.label}>COUNTRY</label>
+                <input
+                  style={{
+                    ...styles.input,
+                    ...(loading ? styles.inputDisabled : {}),
+                  }}
+                  value={form.country}
+                  onChange={onChange("country")}
+                  placeholder="Country"
+                  disabled={loading}
+                  onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                  onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                />
+              </div>
+              {role === "expert" && (
+                <div>
+                  <label style={styles.label}>SPECIALIZATION</label>
+                  <input
+                    style={{
+                      ...styles.input,
+                      ...(loading ? styles.inputDisabled : {}),
+                    }}
+                    value={form.specialization}
+                    onChange={onChange("specialization")}
+                    placeholder="e.g., Soil, Crops"
+                    disabled={loading}
+                    onFocus={(e) => (e.target.style.borderColor = '#1e293b')}
+                    onBlur={(e) => (e.target.style.borderColor = '#e2e8f0')}
+                  />
+                </div>
+              )}
+            </div>
+
+            {error ? <div style={styles.errorMsg}>{error}</div> : null}
+            {successMsg ? <div style={styles.successMsg}>{successMsg}</div> : null}
+
+            <button
+              style={{
+                ...styles.submitButton,
+                ...(loading ? styles.submitButtonDisabled : {}),
+              }}
+              type="submit"
+              disabled={loading}
+              onMouseEnter={(e) => !loading && (e.target.style.background = '#334155')}
+              onMouseLeave={(e) => (e.target.style.background = '#1e293b')}
+            >
+              {loading ? "Creating account…" : "Sign Up"}
+            </button>
+
+            <div style={styles.footer}>
+              Already have an account?{' '}
+              <Link to="/login" style={styles.link}>
+                Sign In
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
