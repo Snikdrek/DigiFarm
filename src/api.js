@@ -93,8 +93,8 @@ export const addField = async (farmerId, data) => {
   return responseData;
 };
 
-const OPENWEATHER_API_KEY = '008318cca650e6636b5266bf220f8d78';
-const GEMINI_API_KEY = 'AIzaSyDIJS5kh_9l7pmXQ5PW4GWwBpSvV4s94Zs';
+const OPENWEATHER_API_KEY = process.env.REACT_APP_OPENWEATHER_API_KEY;
+const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
 export async function fetchOpenWeather(city) {
   if (!city || !city.trim()) {

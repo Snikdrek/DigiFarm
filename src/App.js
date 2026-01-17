@@ -14,7 +14,6 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import DiseaseDetection from './components/DiseaseDetecton';
-import SetupProfile from './components/SetupProfile';
 
 const FARMER_EMAIL_KEY = 'farmer_email';
 const FARMER_ID_KEY = 'farmer_id';
@@ -22,7 +21,7 @@ const EXPERT_EMAIL_KEY = 'expert_email';
 const FARMER_LOGGED_IN_KEY = 'farmer_logged_in';
 const EXPERT_LOGGED_IN_KEY = 'expert_logged_in';
 
-// Pages where navbar SHOULD be shown (same idea as your example)
+// Farmer navbar pages
 const NAVBAR_PATHS = [
   '/dashboard',
   '/crops',
@@ -35,6 +34,16 @@ const NAVBAR_PATHS = [
   '/setup-profile',
 ];
 
+// Expert navbar pages
+const EXPERT_NAVBAR_PATHS = [
+  '/expert-dashboard',
+  '/expert/answer-questions',
+  '/expert/write-articles',
+  '/disease-detection',
+];
+
+
+// ---------------- Farmer Navbar ----------------
 const ConditionalNavbar = ({
   farmerEmail,
   expertEmail,
@@ -48,7 +57,13 @@ const ConditionalNavbar = ({
   const shouldShowNavbar = NAVBAR_PATHS.some(
     (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
   );
-  if (!shouldShowNavbar) return null;
+
+  // Disease detection rule
+  if (location.pathname === '/disease-detection') {
+    if (!isFarmerLoggedIn) return null;
+  } else if (!shouldShowNavbar) {
+    return null;
+  }
 
   const signedInLabel =
     isFarmerLoggedIn ? `Farmer: ${farmerEmail}` :
@@ -72,52 +87,148 @@ const ConditionalNavbar = ({
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`);
 
-  return (
-    <nav className="navbar">
-      <div
-        className="nav-brand"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          width: '100%',
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, marginBottom: '0.55rem', cursor: 'pointer' }} onClick={() => navigate('/home')}>
-            🌾 DigiFarm
-          </h1>
-          <span className="nav-user">{signedInLabel}</span>
-        </div>
+  const navbarStyles = {
+    navbar: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '16px 48px',
+      background: '#f5f5f5',
+      borderBottom: '1px solid #e0e0e0',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+    },
+    brand: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      cursor: 'pointer',
+    },
+    brandText: {
+      fontSize: '1.3rem',
+      fontWeight: '700',
+      color: '#1e293b',
+      margin: 0,
+      letterSpacing: '-0.5px',
+    },
+    navMenu: {
+      display: 'flex',
+      listStyle: 'none',
+      gap: '32px',
+      margin: 0,
+      padding: 0,
+      alignItems: 'center',
+    },
+    navItem: {
+      fontSize: '0.95rem',
+      fontWeight: '500',
+      color: '#64748b',
+      cursor: 'pointer',
+      transition: 'color 0.2s ease',
+      position: 'relative',
+      padding: '4px 0',
+    },
+    navItemActive: {
+      color: '#1e293b',
+      fontWeight: '600',
+    },
+    rightSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '20px',
+    },
+    userInfo: {
+      fontSize: '0.9rem',
+      color: '#64748b',
+      fontWeight: '500',
+    },
+    logoutButton: {
+      padding: '10px 24px',
+      background: '#1e293b',
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '0.9rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+  };
 
-        {showLogout ? (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onLogout}
-            style={{ height: 'fit-content' }}
-          >
-            Logout
-          </button>
-        ) : null}
+  return (
+    <nav style={navbarStyles.navbar}>
+      {/* Left - Brand */}
+      <div style={navbarStyles.brand} onClick={() => navigate('/home')}>
+        <h1 style={navbarStyles.brandText}>🌾 DigiFarm</h1>
       </div>
 
-      <ul className="nav-menu">
+      {/* Center - Navigation Links */}
+      <ul style={navbarStyles.navMenu}>
         {navItems.map((item) => (
           <li
             key={item.path}
-            className={isActive(item.path) ? 'active' : ''}
+            style={{
+              ...navbarStyles.navItem,
+              ...(isActive(item.path) ? navbarStyles.navItemActive : {}),
+            }}
             onClick={() => navigate(item.path)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#1e293b';
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive(item.path)) {
+                e.currentTarget.style.color = '#64748b';
+              }
+            }}
           >
             {item.label}
           </li>
         ))}
       </ul>
+
+      {/* Right - User Info & Logout */}
+      <div style={navbarStyles.rightSection}>
+        <span style={navbarStyles.userInfo}>{signedInLabel}</span>
+        {showLogout && isFarmerLoggedIn && (
+          <button
+            style={navbarStyles.logoutButton}
+            onClick={onLogout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#334155';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#1e293b';
+            }}
+          >
+            Logout
+          </button>
+        )}
+      </div>
     </nav>
   );
 };
 
+
+// ---------------- Expert Navbar ----------------
+const ConditionalExpertNavbar = ({ expertEmail, isExpertLoggedIn, onLogout }) => {
+  const location = useLocation();
+
+  const shouldShowExpertNavbar = EXPERT_NAVBAR_PATHS.some(
+    (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
+  );
+
+  if (location.pathname === '/disease-detection') {
+    if (!isExpertLoggedIn) return null;
+  } else if (!shouldShowExpertNavbar) {
+    return null;
+  }
+
+  return <ExpertNavbar expertEmail={expertEmail} onLogout={onLogout} />;
+};
+
+
+// ---------------- App Core ----------------
 function AppInner() {
   const navigate = useNavigate();
 
@@ -140,21 +251,14 @@ function AppInner() {
   }, [farmerEmail]);
 
   useEffect(() => {
-    localStorage.setItem(FARMER_ID_KEY, farmerId);
-  }, [farmerId]);
-
-  useEffect(() => {
     localStorage.setItem(FARMER_LOGGED_IN_KEY, String(isFarmerLoggedIn));
-  }, [isFarmerLoggedIn]);
+  }, [farmerEmail, isFarmerLoggedIn]);
 
   // Persist expert
   useEffect(() => {
     localStorage.setItem(EXPERT_EMAIL_KEY, expertEmail);
-  }, [expertEmail]);
-
-  useEffect(() => {
     localStorage.setItem(EXPERT_LOGGED_IN_KEY, String(isExpertLoggedIn));
-  }, [isExpertLoggedIn]);
+  }, [expertEmail, isExpertLoggedIn]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -174,6 +278,12 @@ function AppInner() {
         farmerEmail={farmerEmail}
         expertEmail={expertEmail}
         isFarmerLoggedIn={isFarmerLoggedIn}
+        isExpertLoggedIn={isExpertLoggedIn}
+        onLogout={handleLogout}
+      />
+
+      <ConditionalExpertNavbar
+        expertEmail={expertEmail}
         isExpertLoggedIn={isExpertLoggedIn}
         onLogout={handleLogout}
       />
@@ -206,29 +316,23 @@ function AppInner() {
           <Route path="/crops" element={<CropManagement />} />
           <Route path="/weather" element={<WeatherForecast />} />
           <Route path="/market" element={<MarketPrices />} />
-          <Route path="/irrigation" element={<IrrigationManagement farmerId={farmerId} />} />
+          <Route path="/irrigation" element={<IrrigationManagement />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
           <Route path="/setup-profile" element={<SetupProfile farmerId={farmerId} />} />
 
+          <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+          <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
+          <Route path="/expert/answer-questions" element={<ExpertAnswers expertEmail={expertEmail} />} />
         </Routes>
       </div>
-
-      <style>{`
-        .app-container {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        .main-content {
-          flex: 1;
-        }
-      `}</style>
     </div>
   );
 }
 
+
+// ---------------- Router Wrapper ----------------
 export default function App() {
   return (
     <Router>

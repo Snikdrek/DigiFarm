@@ -122,7 +122,12 @@ export default function Login({
       });
 
       setTimeout(() => {
-        navigate("/home");
+        // condition based navigation
+        if (role === "farmer") {
+          navigate("/home");
+        } else {
+          navigate("/expert-dashboard");
+        }
       }, 800);
     } catch (err) {
       setNotification({
