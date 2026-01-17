@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
 /* ================= GEMINI REST CONFIG ================= */
-// ⚠️ DEMO ONLY — API KEY IS EXPOSED
-const GEMINI_API_KEY = "AIzaSyCeGLtyvzZ2EI9kh22tXYRrXmO8ATl7ebM";
+// Using the same API key as api.js for consistency
+const GEMINI_API_KEY = 'AIzaSyDIJS5kh_9l7pmXQ5PW4GWwBpSvV4s94Zs';
 
 const GEMINI_URL =
-  `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 function MarketPrices() {
   const [crop, setCrop] = useState("rice");
@@ -32,7 +32,10 @@ Do not include markdown or extra text.
 
   /* -------- FETCH MARKET INSIGHT -------- */
   const getInsight = async () => {
-    if (!crop.trim() || !location.trim()) return;
+    if (!crop.trim() || !location.trim()) {
+      setError("Please enter both crop and location");
+      return;
+    }
 
     if (!GEMINI_API_KEY) {
       setError("Missing API key. Set REACT_APP_GEMINI_API_KEY in your .env file.");
@@ -67,10 +70,11 @@ Do not include markdown or extra text.
       if (!response.ok) {
         const errText = await response.text();
         if (response.status === 429) {
-          const cooldownMs = 300_000; // 5 minutes to back off harder
+          const cooldownMs = 60_000; // 1 minute cooldown for 429
           setCooldownUntil(Date.now() + cooldownMs);
-          setCooldownReason("Rate limit exceeded. Please wait ~5 minutes before retrying.");
-          setError("Rate limit exceeded. Please wait ~5 minutes before retrying.");
+          const reason = "Rate limit exceeded. Please wait 1 minute before retrying.";
+          setCooldownReason(reason);
+          setError(reason);
           return;
         }
         throw new Error(errText || `Request failed (${response.status})`);

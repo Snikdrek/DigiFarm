@@ -321,12 +321,11 @@ function AppInner() {
           <Route path="/crops" element={<CropManagement />} />
           <Route path="/weather" element={<WeatherForecast />} />
           <Route path="/market" element={<MarketPrices />} />
-          <Route path="/irrigation" element={<IrrigationManagement />} />
-          <Route path="/faq" element={<FAQ />} />
+          <Route path="/irrigation" element={<IrrigationManagement farmerId={farmerId} />} />
+          <Route path="/faq" element={<FAQ farmerEmail={farmerEmail} />} />
           <Route path="/home" element={<Home />} />
           <Route path="/disease-detection" element={<DiseaseDetection />} />
           <Route path="/setup-profile" element={<SetupProfile farmerId={farmerId} />} />
-
           <Route path="/expert-dashboard" element={<ExpertDashboard />} />
           <Route path="/expert/write-articles" element={<ExpertArticles expertEmail={expertEmail} />} />
           <Route path="/expert/answer-questions" element={<ExpertAnswers expertEmail={expertEmail} />} />
