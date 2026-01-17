@@ -14,6 +14,11 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import DiseaseDetection from './components/DiseaseDetecton';
+import SetupProfile from './components/SetupProfile';
+import ExpertNavbar from './components/ExpertNavbar';
+import ExpertDashboard from './components/ExpertDashboard';
+import ExpertArticles from './components/ExpertArticles';
+import ExpertAnswers from './components/ExpertAnswers';
 
 const FARMER_EMAIL_KEY = 'farmer_email';
 const FARMER_ID_KEY = 'farmer_id';
