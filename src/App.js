@@ -26,7 +26,7 @@ const EXPERT_EMAIL_KEY = 'expert_email';
 const FARMER_LOGGED_IN_KEY = 'farmer_logged_in';
 const EXPERT_LOGGED_IN_KEY = 'expert_logged_in';
 
-// Farmer navbar pages
+//  Farmer navbar pages
 const NAVBAR_PATHS = [
   '/dashboard',
   '/crops',
